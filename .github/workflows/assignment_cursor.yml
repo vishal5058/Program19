@@ -1,0 +1,47 @@
+name: PL/SQL Cursor Autograding
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  autograding:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Show Repository Files
+        run: |
+          echo "Repository structure:"
+          find . -maxdepth 3 -type f | sort
+
+      - name: Find Assignment Files
+        run: |
+          echo "Searching for answers.sql..."
+
+          ANSWER_FILE=$(find . -name "answers.sql" -type f | head -n 1)
+
+          if [ -z "$ANSWER_FILE" ]; then
+            echo "ERROR: answers.sql not found"
+            exit 1
+          fi
+
+          echo "Found: $ANSWER_FILE"
+
+          TEST_FILE=$(find . -name "test.sh" -type f | head -n 1)
+
+          if [ -z "$TEST_FILE" ]; then
+            echo "ERROR: test.sh not found"
+            exit 1
+          fi
+
+          echo "Found: $TEST_FILE"
+
+          chmod +x "$TEST_FILE"
+
+          echo "Running autograding..."
+          cd "$(dirname "$TEST_FILE")"
+          ./test.sh
